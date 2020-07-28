@@ -1,0 +1,12 @@
+{
+  "name": "test-bot",
+  "version": "1.0.0",
+  "description": "i am a test bot",
+  "main": "bot.js",
+  "author": "yahboi",
+  "dependencies": {
+    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
+    "discord.js": "^12.2.0",
+    "winston": "^3.3.3"
+  }
+}

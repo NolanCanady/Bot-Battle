@@ -1,0 +1,34 @@
+{
+  "0":{
+
+  },
+
+  "1":{
+    "0":{
+      "name": "Large Boar",
+      "description": "A boar who seems to have eaten quite well, considering its large size.",
+      "stats":{
+        "xp":"50",
+        "hp":"15",
+        "att":"4",
+        "spd":"3",
+        "def":"5"
+      },
+      "drops":{
+        "common":[
+          "1", "2"
+        ],
+        "uncommon":[
+          "0"
+        ],
+        "rare":[
+          "3"
+        ]
+      }
+    }
+  },
+
+  "2":{
+
+  }
+}

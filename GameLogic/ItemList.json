@@ -1,0 +1,50 @@
+{
+  "0":{
+    "name": "fur",
+    "description": "a tuff of coarse fur dropped by some animal, maybe with enough you could craft some armor",
+    "value": ["cp", "11"],
+    "buffs":{
+      "time": "0",
+      "hp":"0",
+      "att":"0",
+      "spd":"0",
+      "def":"0"
+    }
+  },
+  "1":{
+    "name": "common meat",
+    "description": "a pretty standard cut of meat, eating it will restore a bit of hp",
+    "value": ["cp", "3"],
+    "buffs":{
+      "time": "0",
+      "hp":"3",
+      "att":"0",
+      "spd":"0",
+      "def":"0"
+    }
+  },
+  "2":{
+    "name": "mejo berries",
+    "description": "some fresh mejo berries, eating them will restore a small bit of hp",
+    "value": ["cp", "1"],
+    "buffs":{
+      "time": "0",
+      "hp":"1",
+      "att":"0",
+      "spd":"0",
+      "def":"0"
+    }
+  },
+  "3":{
+    "name": "boar trophy",
+    "description": "the head of a large boar, a trophy from a well fought battle",
+    "value": ["sp", "1"],
+    "buffs":{
+      "time": "0",
+      "hp":"0",
+      "att":"0",
+      "spd":"0",
+      "def":"0"
+    }
+  }
+}
