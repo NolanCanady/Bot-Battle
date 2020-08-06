@@ -6,16 +6,128 @@ var itemlistLoad = require('./GameLogic/ItemList.json');
 var masterEmbed = require('./GameLogic/MessageEmbeds/masterembed.js');
 var fs = require('fs');
 
-const bot = new Discord.Client();
-const TOKEN = auth.token;
-bot.login(TOKEN);
-
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(new logger.transports.Console, {
     colorize: true
 });
 logger.level = 'debug';
+
+//COS Related implementation stuff
+const IBMCOS = require('ibm-cos-sdk');
+const cosconfig = require('./cos-config.js');
+
+var credentials = {
+  useHmac: false,
+  bucketName: "battle-bot-bucket",
+  serviceCredential: {
+    //enter your credentials here
+  },
+};
+
+var CONFIG = {
+  useHmac: false,
+  bucketName: credentials.bucketName,
+  serviceCredential: credentials.serviceCredential,
+};
+
+const getS3 = async(endpoint, serviceCredential) => {
+  let s3Options;
+  if(serviceCredential.apikey){
+    s3Options = {
+      apiKeyId: serviceCredential.apikey,
+      serviceInstanceId: serviceCredential.resource_instance_id,
+      region: 'ibm',
+      endpoint: new IBMCOS.Endpoint(endpoint),
+    };
+  } else {
+    throw new Error('IAM ApiKey required to create s3 client');
+  }
+
+  logger.info('s3 options used: \n'+s3Options);
+  return new IBMCOS.S3(s3Options);
+};
+
+const rp = require('request-promise');
+
+const getEndpoints = async(endpointsURL) => {
+  logger.info("=======getting endpoints=======");
+  const options = {
+    url: endpointsURL,
+    method: 'GET'
+  };
+  const response = await rp(options);
+  return JSON.parse(response);
+}
+
+const findBucketEndpoint = (bucket, endpoints) => {
+  const region = bucket.region || bucket.LocationConstraint.substring(0, bucket.LocationConstraint.lastIndexOf('-'));
+  const serviceEndpoints = endpoints['service-endpoints'];
+  const regionUrls = serviceEndpoints['cross-region'][region] || serviceEndpoints.regional[region] || serviceEndpoints['single-site'][region];
+
+  if(!regionUrls.public || Object.keys(regionUrls.public).length === 0){
+    return "";
+  }
+  return Object.values(regionUrls.public)[0];
+}
+
+const listObjects = async (s3, bucketName) => {
+  const listObject= {
+    Bucket: bucketName
+  };
+  logger.info('fetching object list \n'+listObject);
+
+  const data = await s3.listObjectsV2(listObject).promise();
+  logger.info('Response: \n'+JSON.stringify(data, null, 2));
+  return data;
+}
+
+const listBuckets = async (s3, bucketName) => {
+  const params = {
+    Prefix: bucketName
+  };
+  logger.info("waiting on that data");
+  const data = await s3.listBucketsExtended(params).promise();
+  logger.info(JSON.stringify(data, null, 2));
+  return data;
+}
+
+const defaultEndpoint = 's3.us.cloud-object-storage.appdomain.cloud';
+
+logger.info("Config: \n"+CONFIG);
+
+const main = async() => {
+  try{
+    const{ serviceCredential } = CONFIG;
+    const { bucketName } = CONFIG;
+
+    let s3;
+    s3 = await getS3(defaultEndpoint, serviceCredential);
+
+
+    const data = await listBuckets(s3, bucketName);
+    const bucket = data.Buckets[0];
+
+    const endpoints = await getEndpoints(serviceCredential.endpoints);
+    s3.endpoint = findBucketEndpoint(bucket, endpoints);
+
+    const objectList = await listObjects(s3, bucketName);
+
+    logger.info('done with cos stuff');
+  }catch(err){
+    logger.info('Found an error in s3 operations\n statusCode: '+err.statusCode+'\n message: '+err.message+'\n stack: '+err.stack);
+    process.exit(1);
+  }
+}
+
+main();
+
+//end cos implementation stuff
+
+const bot = new Discord.Client();
+const TOKEN = auth.token;
+bot.login(TOKEN);
+
 // Initialize Discord Bot
 
 bot.on('ready', function (evt) {
